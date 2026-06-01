@@ -489,50 +489,71 @@ window.onload = function() {
   }
   document.getElementById('welcomeDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   
-  spinner(true, 'Connecting secure cloud container…');
+  spinner(true, 'Verifying Administrator secure privileges…');
   
+  // Fetch real user profile from sheet directly using the session token
   google.script.run
-    .withSuccessHandler(function(res) {
-      if (res.success) {
-        ALL_DOCS = res.documents || [];
-        // Map elements
-        google.script.run.withSuccessHandler(cats => {
-          CAT_MAP = {};
-          cats.forEach(c => CAT_MAP[c.name] = c.subcategories || []);
-          ['#upCat','#filterCat'].forEach(sel => {
-            const el = document.querySelector(sel); if(!el) return;
-            cats.forEach(c => { el.appendChild(new Option(c.icon + ' ' + c.name, c.name)); });
-          });
-          
-          google.script.run.withSuccessHandler(fam => {
-            if (fam.success) FAMILY = fam.members;
-            const ownSel = document.getElementById('upOwner');
-            const fSel = document.getElementById('filterOwner');
-            FAMILY.forEach(m => {
-              if(ownSel) ownSel.appendChild(new Option(m,m));
-              if(fSel) fSel.appendChild(new Option(m,m));
-            });
+    .withSuccessHandler(function(userProfile) {
+      if (userProfile) {
+        USER = userProfile;
+        
+        // Populate profile info onto layout
+        document.getElementById('userNameSide').textContent = USER.fullName || USER.username;
+        document.getElementById('userRoleSide').textContent = USER.role === 'admin' ? 'Administrator' : 'Viewer';
+        document.getElementById('welcomeName').textContent = USER.fullName || USER.username;
+
+        // Fetch documents database pipeline
+        google.script.run.withSuccessHandler(function(res) {
+          if (res.success) {
+            ALL_DOCS = res.documents || [];
             
-            // Stats
-            google.script.run.withSuccessHandler(db => {
-              spinner(false);
-              if (db.success) {
-                document.getElementById('statTotal').textContent = db.stats.totalDocs;
-                document.getElementById('statCats').textContent = Object.keys(db.stats.categories).length;
-                document.getElementById('statExpiring').textContent = db.stats.expiringSoon.length;
-                document.getElementById('statExpired').textContent = db.stats.expired.length;
+            // Fetch categories array matrix
+            google.script.run.withSuccessHandler(cats => {
+              CAT_MAP = {};
+              cats.forEach(c => CAT_MAP[c.name] = c.subcategories || []);
+              ['#upCat','#filterCat'].forEach(sel => {
+                const el = document.querySelector(sel); if(!el) return;
+                cats.forEach(c => { el.appendChild(new Option(c.icon + ' ' + c.name, c.name)); });
+              });
+              
+              // Fetch family matrix definitions
+              google.script.run.withSuccessHandler(fam => {
+                if (fam.success) FAMILY = fam.members;
+                const ownSel = document.getElementById('upOwner');
+                const fSel = document.getElementById('filterOwner');
+                FAMILY.forEach(m => {
+                  if(ownSel) ownSel.appendChild(new Option(m,m));
+                  if(fSel) fSel.appendChild(new Option(m,m));
+                });
                 
-                // Render table
-                renderDocTable(1);
-                navTo(INIT_PAGE);
-              }
-            }).getDashboardStats(TOKEN);
-          }).getFamilyMembers(TOKEN);
-        }).getCategories();
+                // Fetch stats computations matrix
+                google.script.run.withSuccessHandler(db => {
+                  spinner(false);
+                  if (db.success) {
+                    document.getElementById('statTotal').textContent = db.stats.totalDocs;
+                    document.getElementById('statCats').textContent = Object.keys(db.stats.categories).length;
+                    document.getElementById('statExpiring').textContent = db.stats.expiringSoon.length;
+                    document.getElementById('statExpired').textContent = db.stats.expired.length;
+                    
+                    renderDocTable(1);
+                    navTo(INIT_PAGE);
+                  }
+                }).getDashboardStats(TOKEN);
+              }).getFamilyMembers(TOKEN);
+            }).getCategories();
+          }
+        }).getDocuments(TOKEN, null);
+
       } else {
-        spinner(false); window.location.href = 'index.html';
+        spinner(false); 
+        window.location.href = 'index.html';
       }
-    }).getDocuments(TOKEN, null);
+    })
+    .withFailureHandler(function() {
+      spinner(false);
+      window.location.href = 'index.html';
+    })
+    .getSessionUser(TOKEN);
 };
 
 function navTo(page) {
@@ -562,12 +583,28 @@ function renderDocTable(page) {
   document.getElementById('docTableCount').textContent = total + ' Documents';
   
   const tbody = document.getElementById('docTableBody');
+  if (!docs.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><h4>No documents found</h4></div></td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = docs.map(d => {
+    const isFav = d['Is Favorite'] === 'true';
+    const isPin = d['Is Pinned'] === 'true';
     const exTag = d['Expiry Date'] ? expiryTag(d['Expiry Date']) : '—';
-    const isAdmin = true; // ── FIXED SHORTCUT FOR RE-ACTIVATION ──
+    
     return `
     <tr>
-      <td><strong>${esc(d['Document Name'])}</strong></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div>
+            <div style="font-weight:600;font-size:13.5px">
+              ${isFav ? '⭐ ' : ''}${isPin ? '📌 ' : ''}${esc(d['Document Name'])}
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary)">${esc(d['Document ID'])}</div>
+          </div>
+        </div>
+      </td>
       <td><span class="badge-cat" style="${catStyle(d['Category'])}">${esc(d['Category'])}</span></td>
       <td>${esc(d['Owner'])}</td>
       <td>${fmtDate(d['Upload Date'])}</td>
@@ -575,9 +612,14 @@ function renderDocTable(page) {
       <td><span class="badge-type type-${(d['File Type']||'').toLowerCase()}">${d['File Type']||''}</span></td>
       <td>${esc(d['File Size'])}</td>
       <td>
+        <!-- ── RESTORED: All Admin Management Tools ── -->
         <div style="display:flex;gap:3px">
-          <button class="btn-sm-icon btn-view" onclick="viewDoc('${d['Document ID']}')"><span class="material-icons-round">visibility</span></button>
-          <button class="btn-sm-icon btn-dl" onclick="dlDoc('${d['Document ID']}')"><span class="material-icons-round">download</span></button>
+          <button class="btn-sm-icon btn-view" onclick="viewDoc('${d['Document ID']}')" title="Preview"><span class="material-icons-round">visibility</span></button>
+          <button class="btn-sm-icon btn-dl" onclick="dlDoc('${d['Document ID']}')" title="Download"><span class="material-icons-round">download</span></button>
+          <button class="btn-sm-icon btn-fav" onclick="toggleFav('${d['Document ID']}',${!isFav})" title="Favorite"><span class="material-icons-round">${isFav ? 'star' : 'star_border'}</span></button>
+          <button class="btn-sm-icon btn-pin" onclick="togglePin('${d['Document ID']}',${!isPin})" title="Pin"><span class="material-icons-round">push_pin</span></button>
+          <button class="btn-sm-icon btn-edit" onclick="openEdit('${d['Document ID']}')" title="Edit"><span class="material-icons-round">edit</span></button>
+          <button class="btn-sm-icon btn-del" onclick="openDelete('${d['Document ID']}','${esc(d['Document Name'])}')" title="Delete"><span class="material-icons-round">delete</span></button>
         </div>
       </td>
     </tr>`;
