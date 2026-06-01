@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Locker — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-dark: #1557b0;
+    --primary-light: #e8f0fe;
+    --success: #34a853;
+    --warning: #fbbc04;
+    --danger: #ea4335;
+    --surface: #ffffff;
+    --bg: #f0f4f8;
+    --text: #202124;
+    --text-secondary: #5f6368;
+    --border: #dadce0;
+    --shadow: 0 2px 10px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(26,115,232,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(52,168,83,0.04) 0%, transparent 40%),
+      radial-gradient(circle at 60% 80%, rgba(251,188,4,0.04) 0%, transparent 40%);
+  }
+
+  .login-wrapper {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+  }
+
+  .brand-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .brand-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--primary) 0%, #4285f4 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 24px rgba(26,115,232,0.3);
+  }
+
+  .brand-icon .material-icons-round { color: white; font-size: 36px; }
+
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .brand-tagline {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 36px 32px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+
+  .login-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .login-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+  }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-secondary);
+    font-size: 20px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 11px 14px 11px 44px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--surface);
+    transition: all 0.2s;
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 14px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 20px;
+    user-select: none;
+    transition: color 0.2s;
+  }
+
+  .toggle-password:hover { color: var(--primary); }
+
+  .remember-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .remember-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .remember-label input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-login:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(26,115,232,0.35);
+  }
+
+  .btn-login:active { transform: translateY(0); }
+
+  .btn-login:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .alert-box {
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .alert-error { background: #fce8e6; color: #c5221f; border: 1px solid #f5c6c6; }
+  .alert-success { background: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
+
+  .default-creds {
+    background: var(--primary-light);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--primary);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .default-creds .material-icons-round { font-size: 16px; margin-top: 1px; }
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-login.loading .spinner { display: block; }
+  .btn-login.loading .btn-text { display: none; }
+</style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="brand-header">
+    <div class="brand-icon">
+      <span class="material-icons-round">lock</span>
+    </div>
+    <div class="brand-name">Digital Locker</div>
+    <div class="brand-tagline">Secure Personal Document Management</div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-title">Welcome back</div>
+    <div class="login-subtitle">Sign in to access your documents</div>
+
+    <div id="alertBox" style="display:none;"></div>
+
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <div class="input-wrapper">
+        <span class="material-icons-round input-icon">person</span>
+        <input type="text" id="username" class="form-input" placeholder="Enter username" autocomplete="username">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="input-wrapper">
+        <span class="material-icons-round input-icon">lock</span>
+        <input type="password" id="password" class="form-input" placeholder="Enter password" autocomplete="current-password">
+        <span class="material-icons-round toggle-password" id="togglePwd" onclick="togglePassword()">visibility_off</span>
+      </div>
+    </div>
+
+    <div class="remember-row">
+      <label class="remember-label">
+        <input type="checkbox" id="rememberMe">
+        Remember me for 8 hours
+      </label>
+    </div>
+
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">
+      <span class="btn-text">Sign In</span>
+      <div class="spinner"></div>
+    </button>
+
+    <div class="default-creds">
+      <span class="material-icons-round">info</span>
+      <div>
+        <strong>Default credentials:</strong><br>
+        Username: <code>admin</code> &nbsp; Password: <code>admin@123</code><br>
+        <em>Change these after first login.</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── IMPORTANT: PASTE YOUR GOOGLE WEB APP URL HERE ──
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycby87sh_B3JGXdHQhaThcj5e7Jcic3rOkWdtQT0fuKlKDOmbH9NY9HWFFaDcaBfDzyXz8A/exec";
+
+  window.onload = function() {
+    const saved = localStorage.getItem('dl_remember');
+    if (saved) {
+      try {
+        const d = JSON.parse(saved);
+        document.getElementById('username').value = d.u || '';
+        document.getElementById('rememberMe').checked = true;
+      } catch(e) {}
+    }
+
+    // Enter key support
+    document.getElementById('password').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+    document.getElementById('username').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('password').focus();
+    });
+  };
+
+  function togglePassword() {
+    const pwd = document.getElementById('password');
+    const icon = document.getElementById('togglePwd');
+    if (pwd.type === 'password') {
+      pwd.type = 'text';
+      icon.textContent = 'visibility';
+    } else {
+      pwd.type = 'password';
+      icon.textContent = 'visibility_off';
+    }
+  }
+
+  function showAlert(message, type) {
+    const box = document.getElementById('alertBox');
+    const icon = type === 'error' ? 'error' : 'check_circle';
+    box.innerHTML = `<div class="alert-box alert-${type}"><span class="material-icons-round" style="font-size:16px;">${icon}</span>${message}</div>`;
+    box.style.display = 'block';
+  }
+
+  function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+    const btn = document.getElementById('loginBtn');
+
+    if (!username || !password) {
+      showAlert('Please enter both username and password.', 'error');
+      return;
+    }
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+    document.getElementById('alertBox').style.display = 'none';
+
+    // Send login payload directly to your Google Script Web API
+    fetch(GAS_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'login',
+        username: username,
+        password: password
+      })
+    })
+    .then(response => response.json())
+    .then(result => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+
+      if (result.success) {
+        if (rememberMe) {
+          localStorage.setItem('dl_remember', JSON.stringify({ u: username }));
+        } else {
+          localStorage.removeItem('dl_remember');
+        }
+
+        sessionStorage.setItem('dl_token', result.token);
+        sessionStorage.setItem('dl_user', JSON.stringify({
+          username: result.username,
+          role: result.role,
+          fullName: result.fullName,
+          email: result.email
+        }));
+
+        showAlert('Login successful! Redirecting...', 'success');
+
+        // Redirect safely to the workspace file on GitHub pages
+        setTimeout(() => {
+          window.location.href = 'app.html?token=' + result.token;
+        }, 600);
+      } else {
+        showAlert(result.message || 'Invalid credentials. Please try again.', 'error');
+      }
+    })
+    .catch(err => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      showAlert('Connection error. Please try again.', 'error');
+    });
+  }
+</script>
+</body>
+</html>
