@@ -462,6 +462,7 @@ const runner = {
 function execApiCall(func, args, sCb, fCb) {
   fetch(GAS_API_URL, {
     method: 'POST',
+    mode: 'cors', // ➔ Forces cross-origin safety checks to pass cleanly
     body: JSON.stringify({ action: func, args: args })
   })
   .then(res => res.json())
